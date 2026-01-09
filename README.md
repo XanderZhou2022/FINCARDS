@@ -1,4 +1,4 @@
-## FINCARDS Retrieval Pipeline (ACL)
+## FINCARDS Retrieval Pipeline
 
 This repository contains the implementation of the **FINCARDS** retrieval pipeline used in our paper.  
 The pipeline operates in **four stages**:
