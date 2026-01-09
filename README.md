@@ -1,6 +1,6 @@
 ## FINCARDS Retrieval Pipeline (ACL)
 
-This repository contains the implementation of the **FINCARDS** retrieval pipeline used in our ACL paper.  
+This repository contains the implementation of the **FINCARDS** retrieval pipeline used in our paper.  
 The pipeline operates in **four stages**:
 
 - **Stage 0a (`stage0_generate_cards.py`)**:  
