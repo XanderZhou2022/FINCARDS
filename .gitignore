@@ -1,0 +1,32 @@
+# Secrets and local environments
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Local data and generated cards
+data/
+filtered_data/
+chunk_cards*.json
+card_generation_progress.json
+
+# Pipeline outputs
+stage0_query_intents.jsonl
+stage1_candidates_detailed.jsonl
+stage1_summary.json
+stage2_results_detailed.jsonl
+stage2_intermediate_results.jsonl
+stage2_summary.json
+stage2_results.csv
+stage3_results_detailed.jsonl
+stage3_intermediate_results.jsonl
+stage3_summary.json
+stage3_results.csv
+
+# Logs and temporary files
+*.log
+*.tmp
+.DS_Store

@@ -1,130 +1,147 @@
-## FINCARDS Retrieval Pipeline
+<div align="center">
 
-This repository contains the implementation of the **FINCARDS** retrieval pipeline used in our paper.  
-The pipeline operates in **four stages**:
+# FINCARDS
 
-- **Stage 0a (`stage0_generate_cards.py`)**:  
-  - Generates chunk Cards (with Semantic Sketch) from `unique_chunks.json` using an API model.  
-  - Inputs:  
-    - `../data/finbenchqa/filtered_data/unique_chunks.json`  
-  - Outputs:  
-    - `filtered_data/chunk_cards.json`  
-    - `filtered_data/card_generation_progress.json`
+**Card-Based Analyst Reranking for Financial Document Question Answering**
 
-- **Stage 0b (`stage0_query_intent.py`)**:  
-  - Maps each question to a structured intent JSON for downstream alignment.  
-  - Inputs:  
-    - `../data/finbenchqa/filtered_data/questions.json`  
-  - Outputs:  
-    - `stage0_query_intents.jsonl`
+Yixi Zhou, Fan Zhang, Yu Chen, Haipeng Zhang, Preslav Nakov, and Zhuohan Xie
 
-- **Stage 1 (`stage1_lexical_bm25.py`)**:  
-  - Parallel BM25 retrieval over intra-document chunks for every question.  
-  - Uses dynamic candidate size \(N = \lceil r \cdot L \rceil\) with clamping between `MIN_N` and `MAX_N`.  
-  - Inputs:  
-    - `../data/finbenchqa/filtered_data/questions.json`  
-    - `../data/finbenchqa/filtered_data/unique_chunks.json`  
-  - Outputs (in `stage1` folder or current directory, depending on where you run it):  
-    - `stage1_candidates_detailed.jsonl`  
-    - `stage1_summary.json`
+[![arXiv](https://img.shields.io/badge/arXiv-2601.06992-b31b1b.svg)](https://arxiv.org/abs/2601.06992)
 
-- **Stage 2 (`stage2_card_rerank.py`)**:  
-  - Agent-based grouping, filtering, and reranking over Stage 1 candidates using FINCARDS.  
-  - Requires OpenAI-compatible API for the card-based agent.  
-  - Inputs:  
-    - `../stage1/stage1_candidates_detailed.jsonl`  
-    - `../data/finbenchqa/filtered_data/` (chunk card JSON files from Stage 0a)  
-  - Outputs (in `stage2` directory):  
-    - `stage2_results_detailed.jsonl`  
-    - `stage2_intermediate_results.jsonl`  
-    - `stage2_summary.json`  
-    - `stage2_results.csv`
+FINCARDS turns long financial filings into structured evidence cards, then reranks
+candidate chunks with explicit constraints over metrics, entities, periods, and
+numeric evidence.
 
-- **Stage 3 (`stage3_bootstrap_listwise.py`)**:  
-  - Bootstrap-based listwise ranking and aggregation over Stage 2 candidates.  
-  - Runs multiple rounds of group-wise listwise ranking with Borda-style aggregation.  
-  - Inputs:  
-    - `../stage2/stage2_results_detailed.jsonl`  
-    - `../data/finbenchqa/filtered_data/` (chunk card JSON files from Stage 0a)  
-  - Outputs (in `stage3` directory):  
-    - `stage3_results_detailed.jsonl`  
-    - `stage3_intermediate_results.jsonl`  
-    - `stage3_summary.json`  
-    - `stage3_results.csv`
+</div>
 
-### Environment & Dependencies
+<p align="center">
+  <img src="assets/fincards-challenge.svg" alt="Key challenge in financial QA: relevant evidence must satisfy metric, period, and numeric constraints." width="78%">
+</p>
 
-- **Python**: 3.9+ recommended  
-- **Core libraries** (non-exhaustive, inferred from scripts):  
-  - `pandas`  
-  - `numpy`  
-  - `openai` (or compatible client library providing `OpenAI`)  
+## Overview
 
-You can install them via:
+Financial QA over corporate filings is not just semantic search. A correct
+evidence chunk often has to match the requested financial metric, fiscal period,
+entity scope, and numeric signal at the same time. Generic rerankers can surface
+text that is topically similar but wrong on one of those constraints.
+
+**FINCARDS** reframes evidence selection as constraint-aware reranking:
+
+- **Chunk Cards** expose finance-specific fields such as entities, metrics,
+  periods, numeric spans, table cues, and section context.
+- **Query Intents** map each question into the same structured space.
+- **Tournament Reranking** screens, orders, and stabilizes candidates through
+  card-based comparisons and aggregation.
+- **Audit Traces** make the final ranking easier to inspect than a single
+  monolithic long-context prompt.
+
+<p align="center">
+  <img src="assets/fincards-pipeline.svg" alt="FINCARDS pipeline: card abstraction, query intent mapping, and tournament reranking." width="96%">
+</p>
+
+## Repository Contents
+
+```text
+.
+|-- README.md
+|-- requirements.txt
+|-- pipeline/
+|   |-- stage0_generate_cards.py        # Build structured Chunk Cards
+|   |-- stage0_query_intent.py          # Map questions to structured intents
+|   |-- stage1_lexical_bm25.py          # High-recall intra-document BM25 retrieval
+|   |-- stage2_card_rerank.py           # Card-based candidate screening/reranking
+|   `-- stage3_bootstrap_listwise.py    # Bootstrap listwise ranking and aggregation
+`-- assets/
+    |-- fincards-challenge.svg
+    `-- fincards-pipeline.svg
+```
+
+## Pipeline
+
+| Stage | Script | Purpose | Main outputs |
+| --- | --- | --- | --- |
+| 0a | `pipeline/stage0_generate_cards.py` | Generate structured Chunk Cards from filing chunks. | `chunk_cards.json`, progress JSON |
+| 0b | `pipeline/stage0_query_intent.py` | Convert questions into structured financial intents. | `stage0_query_intents.jsonl` |
+| 1 | `pipeline/stage1_lexical_bm25.py` | Retrieve high-recall candidates within each filing. | `stage1_candidates_detailed.jsonl`, `stage1_summary.json` |
+| 2 | `pipeline/stage2_card_rerank.py` | Screen and rerank Stage 1 candidates using cards. | `stage2_results_detailed.jsonl`, intermediate trace, summary, CSV |
+| 3 | `pipeline/stage3_bootstrap_listwise.py` | Stabilize ranking with bootstrap listwise aggregation. | `stage3_results_detailed.jsonl`, intermediate trace, summary, CSV |
+
+## Quick Start
+
+Create an environment and install the minimal dependencies:
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-If you do not have a `requirements.txt` yet, a minimal starting point is:
+Configure API access through environment variables. Do not commit real keys.
 
 ```bash
-pip install pandas numpy openai
+export OPENAI_API_KEY="<your-api-key>"
+export OPENAI_MODEL_NAME="<model-name>"
 ```
 
-### API Configuration
-
-Stages 2 and 3 require an API key and model name:
-
-- **Environment variables**:
-  - `OPENAI_API_KEY` – your API key (required for Stage 2 and Stage 3).  
-  - `OPENAI_MODEL_NAME` – model name (optional, defaults are set in the scripts).
-
-Example:
+For Stage 0 scripts that use OpenAI-compatible endpoints, you may also set:
 
 ```bash
-export OPENAI_API_KEY="sk-xxxxx"
-export OPENAI_MODEL_NAME="gpt-5-mini-2025-08-07"
+export OPENAI_BASE_URL="https://api.openai.com/v1/"
 ```
 
-### Data Layout
+## Expected Data Layout
 
-The scripts expect the **FinBenchQA**-style data layout:
+The scripts are designed for a FinBenchQA-style layout. Generated data, benchmark
+files, and model outputs are intentionally not tracked in this repository.
 
-- `../data/finbenchqa/filtered_data/questions.json`  
-- `../data/finbenchqa/filtered_data/unique_chunks.json`  
-- Additional chunk card JSON files under `../data/finbenchqa/filtered_data/` used in Stages 2 and 3.
+```text
+../data/finbenchqa/filtered_data/
+|-- questions.json
+|-- unique_chunks.json
+`-- chunk_cards.json or per-document card JSON files
+```
 
-Make sure you run each stage from its intended directory (e.g., `stage1/`, `stage2/`, `stage3/`) so that the relative paths in the scripts resolve correctly.
+Some paths are constants near the top of each script. If your local directory
+layout differs, edit those constants before running the corresponding stage.
 
-### Running the Pipeline
+## Running
 
-1. **Stage 1 – BM25 candidates**
+Run each stage from the repository root after preparing the expected inputs:
 
 ```bash
-cd stage1
-python stage1_lexical_bm25.py
+python pipeline/stage0_generate_cards.py
+python pipeline/stage0_query_intent.py
+python pipeline/stage1_lexical_bm25.py
+python pipeline/stage2_card_rerank.py
+python pipeline/stage3_bootstrap_listwise.py
 ```
 
-2. **Stage 2 – Card-based reranking**
+Stage 1 is deterministic. Stages that call an LLM use deterministic decoding
+where configured, but API-side behavior and bootstrap grouping can still affect
+runtime and small ranking differences.
 
-```bash
-cd ../stage2
-python stage2_card_rerank.py
+## Safety Notes
+
+- Keep API keys in environment variables or a local `.env` file.
+- Do not commit benchmark data, generated outputs, traces, or local experiment
+  folders unless they are explicitly intended for release.
+- Review generated card files before publishing because they may contain source
+  document text from the underlying filings.
+- This repository contains code only; paper sources, local paths, and private
+  notes are not required to run the public pipeline.
+
+## Citation
+
+If you use FINCARDS, please cite the accompanying paper:
+
+```bibtex
+@misc{zhou2026fincardscardbasedanalystreranking,
+  title = {FinCARDS: Card-Based Analyst Reranking for Financial Document Question Answering},
+  author = {Yixi Zhou and Fan Zhang and Yu Chen and Haipeng Zhang and Preslav Nakov and Zhuohan Xie},
+  year = {2026},
+  eprint = {2601.06992},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.IR},
+  url = {https://arxiv.org/abs/2601.06992}
+}
 ```
-
-3. **Stage 3 – Bootstrap listwise ranking**
-
-```bash
-cd ../stage3
-python stage3_bootstrap_listwise.py
-```
-
-Each stage reads the outputs from the previous stage and writes its own detailed and summary artifacts.
-
-### Notes
-
-- The scripts are designed to be **deterministic in Stage 1**, and **stochastic in Stage 3** (bootstrap + random grouping), so you may see slight variance between runs in Stage 3.  
-- Hyperparameters such as candidate ratios, group sizes, and top‑K can be adjusted directly in the corresponding Python files.
-
-
