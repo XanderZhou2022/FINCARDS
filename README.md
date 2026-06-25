@@ -6,7 +6,9 @@
 
 Yixi Zhou, Fan Zhang, Yu Chen, Haipeng Zhang, Preslav Nakov, and Zhuohan Xie
 
-[![arXiv](https://img.shields.io/badge/arXiv-2601.06992-b31b1b.svg)](https://arxiv.org/abs/2601.06992)
+[![ACL Anthology](https://img.shields.io/badge/ACL%20Anthology-2026.findings--acl.1244-0f766e.svg)](https://aclanthology.org/2026.findings-acl.1244/)
+[![PDF](https://img.shields.io/badge/PDF-ACL%20Anthology-b31b1b.svg)](https://aclanthology.org/2026.findings-acl.1244.pdf)
+[![Project Page](https://img.shields.io/badge/Project-Page-0f766e.svg)](https://xanderzhou2022.github.io/FINCARDS/)
 
 FINCARDS turns long financial filings into structured evidence cards, then reranks
 candidate chunks with explicit constraints over metrics, entities, periods, and
@@ -43,6 +45,7 @@ text that is topically similar but wrong on one of those constraints.
 
 ```text
 .
+|-- index.html                         # GitHub Pages project website
 |-- README.md
 |-- requirements.txt
 |-- pipeline/
@@ -51,9 +54,20 @@ text that is topically similar but wrong on one of those constraints.
 |   |-- stage1_lexical_bm25.py          # High-recall intra-document BM25 retrieval
 |   |-- stage2_card_rerank.py           # Card-based candidate screening/reranking
 |   `-- stage3_bootstrap_listwise.py    # Bootstrap listwise ranking and aggregation
+|-- static/                             # Website CSS, JS, and favicon
 `-- assets/
     |-- fincards-challenge.svg
     `-- fincards-pipeline.svg
+```
+
+## Project Website
+
+This repository includes a static GitHub Pages website at `index.html`, adapted
+from the Nerfies academic project page template. After pushing to GitHub, enable
+Pages from the repository root on the main branch. The default URL is:
+
+```text
+https://xanderzhou2022.github.io/FINCARDS/
 ```
 
 ## Pipeline
@@ -132,16 +146,28 @@ runtime and small ranking differences.
 
 ## Citation
 
-If you use FINCARDS, please cite the accompanying paper:
+If you use FINCARDS, please cite the Findings of ACL 2026 paper:
 
 ```bibtex
-@misc{zhou2026fincardscardbasedanalystreranking,
-  title = {FinCARDS: Card-Based Analyst Reranking for Financial Document Question Answering},
-  author = {Yixi Zhou and Fan Zhang and Yu Chen and Haipeng Zhang and Preslav Nakov and Zhuohan Xie},
-  year = {2026},
-  eprint = {2601.06992},
-  archivePrefix = {arXiv},
-  primaryClass = {cs.IR},
-  url = {https://arxiv.org/abs/2601.06992}
+@inproceedings{zhou-etal-2026-fincards,
+    title = "{F}in{CARDS}: Card-Based Analyst Reranking for Financial Document Question Answering",
+    author = "Zhou, Yixi  and
+      Zhang, Fan  and
+      Chen, YU  and
+      Zhang, Haipeng  and
+      Nakov, Preslav  and
+      Xie, Zhuohan",
+    editor = "Liakata, Maria  and
+      Moreira, Viviane P.  and
+      Zhang, Jiajun  and
+      Jurgens, David",
+    booktitle = "Findings of the {A}ssociation for {C}omputational {L}inguistics: {ACL} 2026",
+    month = jul,
+    year = "2026",
+    address = "San Diego, California, United States",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2026.findings-acl.1244/",
+    pages = "24836--24852",
+    ISBN = "979-8-89176-395-1"
 }
 ```

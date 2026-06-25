@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="FinCARDS is a card-based analyst reranking framework for financial document question answering over long corporate filings, published in Findings of ACL 2026.">
+  <meta name="keywords" content="FinCARDS, financial question answering, reranking, retrieval, SEC filings, FinBenchQA, Findings of ACL 2026">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FinCARDS: Card-Based Analyst Reranking</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script defer src="./static/js/index.js"></script>
+</head>
+<body>
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item brand-mark" href="#">
+      <span class="icon"><i class="fas fa-layer-group"></i></span>
+      <span>FinCARDS</span>
+    </a>
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="main-navbar">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div id="main-navbar" class="navbar-menu">
+    <div class="navbar-end">
+      <a class="navbar-item" href="#abstract">Abstract</a>
+      <a class="navbar-item" href="#method">Method</a>
+      <a class="navbar-item" href="#pipeline">Pipeline</a>
+      <a class="navbar-item" href="#BibTeX">BibTeX</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero publication-header">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <p class="publication-kicker">Financial Document Question Answering</p>
+          <h1 class="title is-1 publication-title">
+            FinCARDS: Card-Based Analyst Reranking for Financial Document Question Answering
+          </h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Yixi Zhou<sup>1,*</sup>,</span>
+            <span class="author-block">Fan Zhang<sup>2,*</sup>,</span>
+            <span class="author-block">Yu Chen<sup>2,†</sup>,</span>
+            <span class="author-block">Haipeng Zhang<sup>1,†</sup>,</span>
+            <span class="author-block">Preslav Nakov<sup>3</sup>,</span>
+            <span class="author-block">Zhuohan Xie<sup>3</sup></span>
+          </div>
+          <div class="publication-affiliations">
+            <span class="affiliation-block"><sup>1</sup> ShanghaiTech University</span>
+            <span class="affiliation-block"><sup>2</sup> The University of Tokyo</span>
+            <span class="affiliation-block"><sup>3</sup> MBZUAI</span>
+          </div>
+          <div class="publication-notes">
+            <span><sup>*</sup> Equal contribution</span>
+            <span><sup>†</sup> Corresponding author</span>
+          </div>
+          <div class="publication-email">
+            <a href="mailto:zhouyx2022@shanghaitech.edu.cn">zhouyx2022@shanghaitech.edu.cn</a>
+          </div>
+          <div class="is-size-5 publication-venue">
+            Findings of the Association for Computational Linguistics: ACL 2026
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="https://aclanthology.org/2026.findings-acl.1244.pdf" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://aclanthology.org/2026.findings-acl.1244/" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-book-open"></i></span>
+                  <span>ACL Anthology</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://github.com/XanderZhou2022/FINCARDS" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fab fa-github"></i></span>
+                  <span>Code</span>
+                </a>
+              </span>
+            </div>
+          </div>
+
+          <p class="hero-summary">
+            FINCARDS turns long financial filings into structured evidence cards, then reranks
+            candidate chunks with explicit constraints over metrics, entities, periods, and numeric evidence.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <figure class="figure-panel">
+        <img src="./assets/fincards-challenge.svg" alt="Key challenge in financial QA: relevant evidence must satisfy metric, period, and numeric constraints.">
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="abstract">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Financial question answering over corporate filings is not just semantic search.
+            A correct evidence chunk often needs to match the requested financial metric, fiscal
+            period, entity scope, and numeric signal at the same time.
+          </p>
+          <p>
+            FINCARDS reframes evidence selection as constraint-aware reranking. It exposes filing
+            chunks as structured cards, maps questions into the same intent space, and uses
+            tournament-style comparisons to screen, order, and stabilize candidate evidence.
+          </p>
+          <p>
+            The resulting rankings are easier to audit than a single monolithic long-context
+            prompt because each decision is grounded in explicit card fields such as metrics,
+            temporal anchors, scope, numeric evidence, table cues, and section context.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section method-section" id="method">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3 has-text-centered">Method</h2>
+        <figure class="figure-panel">
+          <img src="./assets/fincards-pipeline.svg" alt="FINCARDS pipeline: card abstraction, query intent mapping, and tournament reranking.">
+        </figure>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-icon"><i class="fas fa-id-card"></i></div>
+            <h3 class="title is-5">Chunk Cards</h3>
+            <p>Represent each chunk by evidence role, type, temporal anchor, scope, measurement basis, verifiability, and semantic sketch.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon accent-amber"><i class="fas fa-bullseye"></i></div>
+            <h3 class="title is-5">Query Intents</h3>
+            <p>Map questions into aligned fields for topic, entities, metrics, temporal scope, relation, and numeric evidence requirements.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon accent-rose"><i class="fas fa-random"></i></div>
+            <h3 class="title is-5">Tournament Reranking</h3>
+            <p>Screen BM25 candidates through card-aware group comparisons and stabilize final rankings with bootstrap listwise aggregation.</p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pipeline">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Pipeline</h2>
+    <div class="timeline">
+      <div class="timeline-step">
+        <span class="step-index">I</span>
+        <div>
+          <h3 class="title is-5">Card Abstraction</h3>
+          <p>
+            FINCARDS converts long filing chunks into compact evidence cards that expose
+            finance-specific signals such as metrics, entities, periods, numeric claims,
+            table structure, scope, measurement basis, and evidence limitations.
+          </p>
+        </div>
+      </div>
+      <div class="timeline-step">
+        <span class="step-index">II</span>
+        <div>
+          <h3 class="title is-5">Query-Card Alignment</h3>
+          <p>
+            Each question is mapped into the same structured space, allowing candidate
+            evidence to be judged by explicit constraint matches rather than by topical
+            similarity alone.
+          </p>
+        </div>
+      </div>
+      <div class="timeline-step">
+        <span class="step-index">III</span>
+        <div>
+          <h3 class="title is-5">Analyst Reranking</h3>
+          <p>
+            The system compares candidate evidence through card-aware tournament and
+            listwise judgments, then aggregates the results into a stable, auditable
+            final ranking for financial question answering.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <div class="section-heading-row">
+      <h2 class="title">BibTeX</h2>
+      <button class="button is-small is-rounded is-dark copy-bibtex-button" type="button" data-copy-target="bibtex-code">
+        <span class="icon"><i class="far fa-copy"></i></span>
+        <span>Copy</span>
+      </button>
+    </div>
+    <pre><code id="bibtex-code">@inproceedings{zhou-etal-2026-fincards,
+    title = "{F}in{CARDS}: Card-Based Analyst Reranking for Financial Document Question Answering",
+    author = "Zhou, Yixi  and
+      Zhang, Fan  and
+      Chen, YU  and
+      Zhang, Haipeng  and
+      Nakov, Preslav  and
+      Xie, Zhuohan",
+    editor = "Liakata, Maria  and
+      Moreira, Viviane P.  and
+      Zhang, Jiajun  and
+      Jurgens, David",
+    booktitle = "Findings of the {A}ssociation for {C}omputational {L}inguistics: {ACL} 2026",
+    month = jul,
+    year = "2026",
+    address = "San Diego, California, United States",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2026.findings-acl.1244/",
+    pages = "24836--24852",
+    ISBN = "979-8-89176-395-1"
+}</code></pre>
+  </div>
+</section>
+
+<button id="scroll-top-button" class="scroll-top-button" type="button" aria-label="Back to top">
+  <i class="fas fa-arrow-up"></i>
+</button>
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a class="icon-link" href="https://aclanthology.org/2026.findings-acl.1244.pdf" aria-label="Paper PDF">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link" href="https://github.com/XanderZhou2022/FINCARDS" aria-label="Code">
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content has-text-centered">
+          <p>
+            Website template adapted from <a href="https://nerfies.github.io/">Nerfies</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
